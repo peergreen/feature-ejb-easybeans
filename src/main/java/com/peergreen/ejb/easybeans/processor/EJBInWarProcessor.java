@@ -14,6 +14,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.naming.NamingException;
+
 import org.apache.felix.ipojo.annotations.Requires;
 import org.ow2.easybeans.api.EZBContainer;
 import org.ow2.easybeans.api.EZBContainerException;
@@ -21,6 +23,7 @@ import org.ow2.easybeans.api.EZBServer;
 import org.ow2.easybeans.deployment.EasyBeansDeployableInfo;
 import org.ow2.easybeans.deployment.api.EZBDeployableInfo;
 import org.ow2.easybeans.ejbinwar.EasyBeansEJBWarBuilder;
+import org.ow2.easybeans.resolver.ApplicationJNDIResolver;
 import org.ow2.easybeans.resolver.api.EZBApplicationJNDIResolver;
 import org.ow2.easybeans.resolver.api.EZBContainerJNDIResolver;
 import org.ow2.util.archive.api.IArchive;
@@ -63,17 +66,18 @@ public class EJBInWarProcessor {
      */
     public void handle(WebApplication webApplication, ProcessorContext processorContext) throws ProcessorException {
 
-
-
         Map<Object, Object> properties = new HashMap<Object, Object>();
+        properties.put(EZBApplicationJNDIResolver.class, new ApplicationJNDIResolver());
         properties.put(ClassLoader.class, webApplication.getClassLoader());
-        properties.put("application.name", "");
-        properties.put("module.name", webApplication.getArchiveName());
-        //properties.put("application.context", appContext);
-        //properties.put("env.context", encContext);
-        //properties.put("module.context", moduleContext);
-
-        //properties.put(EZBApplicationJNDIResolver.class, ezbInjectionHolder.getJNDIResolver());
+        properties.put("application.name", webApplication.getApplicationName());
+        properties.put("module.name", webApplication.getModuleName());
+        properties.put("application.context", webApplication.getJavaAppContext());
+        try {
+            properties.put("env.context", webApplication.getJavaContext().lookup("comp/env"));
+        } catch (NamingException e) {
+            throw new ProcessorException("Unable to get comp/env subcontext", e);
+        }
+        properties.put("module.context", webApplication.getJavaModuleContext());
 
         // Check if there are EJBs inside the war
         EZBContainer ejb3InWarContainer = getEJBContainerFromWar(properties, processorContext);
