@@ -32,6 +32,7 @@ import org.osgi.service.jndi.JNDIContextManager;
 import org.ow2.easybeans.api.EZBServer;
 import org.ow2.easybeans.jmx.MBeansHelper;
 import org.ow2.easybeans.naming.NamingManager;
+import org.ow2.easybeans.naming.interceptors.ENCManager;
 import org.ow2.easybeans.osgi.archive.BundleArchiveFactory;
 import org.ow2.easybeans.osgi.extension.EasyBeansOSGiExtension;
 import org.ow2.easybeans.osgi.extension.OSGiBindingFactory;
@@ -43,6 +44,8 @@ import org.ow2.easybeans.transaction.JTransactionManager;
 import org.ow2.util.archive.impl.ArchiveManager;
 import org.ow2.util.event.api.IEventService;
 import org.ow2.util.jmx.api.ICommonsModelerExtService;
+
+import com.peergreen.ejb.easybeans.embedded.naming.PeergreenENCInterceptor;
 
 /**
  * Create a customized Embedded component and register it.
@@ -143,6 +146,7 @@ public class PeergreenEasyBeansEmbedded extends Embedded {
             MBeansHelper.setDomainName("peergreen");
             MBeansHelper.setServerName("peergreen");
 
+            ENCManager.setInterceptorClass(PeergreenENCInterceptor.class);
 
             //
             //MDBResourceAdapterHelper.setResourceAdapterFinder(resourceAdapterFinder);
