@@ -13,8 +13,12 @@ package com.peergreen.ejb.easybeans.injection;
 import javax.naming.NamingException;
 
 import org.ow2.easybeans.api.EZBServer;
+import org.ow2.easybeans.deployment.EasyBeansDeployableInfo;
+import org.ow2.easybeans.deployment.api.EZBDeployableInfo;
+import org.ow2.easybeans.resolver.api.EZBApplicationJNDIResolver;
 import org.ow2.easybeans.resolver.api.EZBJNDIResolverException;
 import org.ow2.easybeans.resolver.api.EZBServerJNDIResolver;
+import org.ow2.util.ee.deploy.api.deployable.EJB3Deployable;
 import org.ow2.util.ee.metadata.common.api.struct.IJEjbEJB;
 import org.ow2.util.ee.metadata.common.api.view.ICommonView;
 import org.ow2.util.log.Log;
@@ -94,8 +98,14 @@ public class EJBInjectionProcessor {
                 }
 
                 if (jndiName == null) {
+                    // Try on the container resolver
+
+                    EJB3Deployable ejb3Deployable = ejb3.getDeployable();
+                    EZBDeployableInfo deployableInfo = (EZBDeployableInfo) ejb3Deployable.getExtension(EasyBeansDeployableInfo.class);
+                    EZBApplicationJNDIResolver applicationJNDIResolver = deployableInfo.getApplicationJNDIResolver();
+
                     try {
-                        jndiName = jndiResolver.getEJBJNDIUniqueName(interfaceName, beanName);
+                        jndiName = applicationJNDIResolver.getEJBJNDIUniqueName(interfaceName, beanName);
                     } catch (EZBJNDIResolverException e) {
                         logger.error("No jndi name found on class {0} for interface {1} and beanName {2}",
                                 metadata.getMember().getName(), interfaceName, beanName);
